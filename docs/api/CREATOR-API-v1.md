@@ -2,7 +2,7 @@
 
 Status: Proposed  
 Owner: Product + API Platform  
-Last updated: 2026-02-24
+Last updated: 2026-02-24 (sync regression)
 
 ## 1) Objetivo
 
