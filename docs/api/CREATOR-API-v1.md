@@ -2,7 +2,7 @@
 
 Status: Proposed  
 Owner: Product + API Platform  
-Last updated: 2026-02-20
+Last updated: 2026-02-24
 
 ## 1) Objetivo
 
