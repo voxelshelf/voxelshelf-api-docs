@@ -88,3 +88,40 @@ Published content scope from private repo:
 2. `openapi/v1.yaml` -> public `openapi/v1.yaml`
 
 No runtime source code or private infrastructure data is published.
+
+## 8) Operational Runbook (Public Docs)
+
+### 8.1 Decision log (active)
+
+1. `.github/**` is intentionally excluded from public sync payload.
+2. Public-repo workflow files are managed directly in `voxelshelf/voxelshelf-api-docs`.
+3. This decision reduces token scope pressure and avoids workflow-permission failures during mirror push.
+
+### 8.2 Secret ownership and rotation registry
+
+Maintain this registry in the source repo settings + team ops notes:
+
+1. Secret: `API_DOCS_SYNC_TOKEN`
+   - Owner: `voxelshelf` org (designated maintainer)
+   - Scope: `Contents` read/write (target repo only)
+   - Expiration: must be tracked and reviewed monthly
+   - Rotation policy: rotate immediately on exposure, then at fixed cadence
+2. Secret: `API_DOCS_TARGET_REPO`
+   - Value pattern: `<org>/<repo>`
+   - Current target: `voxelshelf/voxelshelf-api-docs`
+
+### 8.3 Recovery procedure (drift or failed auto-sync)
+
+1. Verify latest source SHA in `main`.
+2. Trigger `API Docs Sync` manually on `main`.
+3. Confirm workflow is green (no 403).
+4. Confirm public mirror commit exists with message:
+   - `sync(api-docs): <sha_source>`
+5. If still failing, validate secrets and target repo write access before rerun.
+
+### 8.4 Quality gate enforcement
+
+1. Keep `API Docs Quality` enabled on `pull_request` for changes in:
+   - `docs/api/**`
+   - `openapi/v1.yaml`
+2. Require this check in branch protection/ruleset where admin access is available.
