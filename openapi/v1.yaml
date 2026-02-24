@@ -1,0 +1,451 @@
+openapi: 3.1.0
+info:
+  title: Voxel Shelf Upload API
+  version: 1.0.0
+  description: Public creator API for upload and publish workflows.
+servers:
+  - url: https://api.voxelshelf.com/api
+security:
+  - bearerAuth: []
+paths:
+  /v1/uploads/presign:
+    post:
+      summary: Request a presigned upload URL
+      operationId: createUploadPresign
+      tags: [Uploads]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PresignUploadRequest"
+      responses:
+        "200":
+          description: Presigned URL generated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PresignUploadResponse"
+        "400":
+          $ref: "#/components/responses/ApiError"
+        "401":
+          $ref: "#/components/responses/ApiError"
+        "403":
+          $ref: "#/components/responses/ApiError"
+        "429":
+          $ref: "#/components/responses/ApiError"
+  /v1/uploads/complete:
+    post:
+      summary: Complete a pending upload
+      operationId: completeUpload
+      tags: [Uploads]
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompleteUploadRequest"
+      responses:
+        "200":
+          description: Upload marked as ready
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompleteUploadResponse"
+        "400":
+          $ref: "#/components/responses/ApiError"
+        "401":
+          $ref: "#/components/responses/ApiError"
+        "403":
+          $ref: "#/components/responses/ApiError"
+        "409":
+          $ref: "#/components/responses/ApiError"
+        "410":
+          $ref: "#/components/responses/ApiError"
+        "429":
+          $ref: "#/components/responses/ApiError"
+  /v1/uploads/{id}:
+    get:
+      summary: Get upload status
+      operationId: getUploadStatus
+      tags: [Uploads]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Upload found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UploadStatusResponse"
+        "401":
+          $ref: "#/components/responses/ApiError"
+        "404":
+          $ref: "#/components/responses/ApiError"
+        "429":
+          $ref: "#/components/responses/ApiError"
+  /v1/creator/products:
+    post:
+      summary: Create a product draft
+      operationId: createCreatorProductDraft
+      tags: [Products]
+      parameters:
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductCreateRequest"
+      responses:
+        "200":
+          description: Draft created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductDraftResponse"
+        "400":
+          $ref: "#/components/responses/ApiError"
+        "401":
+          $ref: "#/components/responses/ApiError"
+        "403":
+          $ref: "#/components/responses/ApiError"
+        "409":
+          $ref: "#/components/responses/ApiError"
+        "429":
+          $ref: "#/components/responses/ApiError"
+  /v1/creator/products/{id}:
+    patch:
+      summary: Update a product draft
+      operationId: updateCreatorProductDraft
+      tags: [Products]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductCreateRequest"
+      responses:
+        "200":
+          description: Draft updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductDraftResponse"
+        "400":
+          $ref: "#/components/responses/ApiError"
+        "401":
+          $ref: "#/components/responses/ApiError"
+        "404":
+          $ref: "#/components/responses/ApiError"
+        "409":
+          $ref: "#/components/responses/ApiError"
+        "429":
+          $ref: "#/components/responses/ApiError"
+  /v1/creator/products/{id}/publish:
+    post:
+      summary: Publish a product draft
+      operationId: publishCreatorProduct
+      tags: [Products]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Product published
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProductPublishResponse"
+        "400":
+          $ref: "#/components/responses/ApiError"
+        "401":
+          $ref: "#/components/responses/ApiError"
+        "403":
+          $ref: "#/components/responses/ApiError"
+        "404":
+          $ref: "#/components/responses/ApiError"
+        "409":
+          $ref: "#/components/responses/ApiError"
+        "429":
+          $ref: "#/components/responses/ApiError"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+  responses:
+    ApiError:
+      description: Standard error envelope
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorEnvelope"
+  schemas:
+    PresignUploadRequest:
+      type: object
+      required: [filename, contentType, size, kind]
+      properties:
+        filename:
+          type: string
+        contentType:
+          type: string
+        size:
+          type: integer
+          minimum: 1
+        kind:
+          type: string
+          enum: [image, file]
+    PresignUploadResponse:
+      type: object
+      required: [uploadId, storageKey, uploadUrl, expiresAt, maxBytes]
+      properties:
+        uploadId:
+          type: string
+        storageKey:
+          type: string
+        uploadUrl:
+          type: string
+          format: uri
+        expiresAt:
+          type: string
+          format: date-time
+        maxBytes:
+          type: integer
+    CompleteUploadRequest:
+      type: object
+      required: [uploadId]
+      properties:
+        uploadId:
+          type: string
+        etag:
+          type: string
+        checksumSha256:
+          type: string
+    CompleteUploadResponse:
+      type: object
+      required: [assetId, status, storageKey, size, mime, kind]
+      properties:
+        assetId:
+          type: string
+        status:
+          type: string
+          enum: [READY]
+        storageKey:
+          type: string
+        size:
+          type: integer
+        mime:
+          type: string
+        kind:
+          type: string
+          enum: [image, file]
+    UploadStatusResponse:
+      type: object
+      required: [id, storageKey, filename, size, mime, kind, status, expiresAt, createdAt, updatedAt]
+      properties:
+        id:
+          type: string
+        storageKey:
+          type: string
+        filename:
+          type: string
+        size:
+          type: integer
+        mime:
+          type: string
+        kind:
+          type: string
+          enum: [image, file]
+        status:
+          type: string
+          enum: [PENDING, READY, FAILED, EXPIRED]
+        expiresAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    ProductImageInput:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+        alt:
+          type: string
+    ProductFileInput:
+      type: object
+      required: [storageKey, filename, size, mime, kind]
+      properties:
+        storageKey:
+          type: string
+        filename:
+          type: string
+        size:
+          type: integer
+        mime:
+          type: string
+        kind:
+          type: string
+          enum: [Model, Archive, Preview, Support]
+    ProductCreateRequest:
+      type: object
+      required:
+        - title
+        - category
+        - subcategory
+        - printMaterials
+        - supports
+        - difficulty
+        - isPresupported
+        - license
+        - price
+        - images
+        - files
+      properties:
+        title:
+          type: string
+        subtitle:
+          type: string
+        description:
+          type: string
+        manufacturingInstructions:
+          type: string
+        category:
+          type: string
+        subcategory:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        printMaterials:
+          type: array
+          items:
+            type: string
+        supports:
+          type: string
+          enum: [Required, Optional, None]
+        difficulty:
+          type: string
+          enum: [Easy, Medium, Hard]
+        isPresupported:
+          type: boolean
+        formats:
+          type: array
+          items:
+            type: string
+        license:
+          type: string
+        printTime:
+          type: string
+        printTimeMinutesMin:
+          type: integer
+        printTimeMinutesMax:
+          type: integer
+        price:
+          type: number
+        allowOffers:
+          type: boolean
+        images:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductImageInput"
+        files:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProductFileInput"
+    ProductDraftResponse:
+      type: object
+      required: [id, slug, status]
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        status:
+          type: string
+          enum: [DRAFT]
+    ProductPublishResponse:
+      type: object
+      required: [id, slug, status]
+      properties:
+        id:
+          type: string
+        slug:
+          type: string
+        status:
+          type: string
+          enum: [PUBLISHED]
+        publishedAt:
+          type: string
+          format: date-time
+          nullable: true
+    ErrorEnvelope:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, details, requestId, retryable]
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            details:
+              type: array
+              items:
+                type: object
+                properties:
+                  field:
+                    type: string
+                  reason:
+                    type: string
+            requestId:
+              type: string
+            retryable:
+              type: boolean
+            retryAfterSeconds:
+              type: integer
