@@ -3,6 +3,7 @@ info:
   title: Voxel Shelf Upload API
   version: 1.0.0
   description: Public creator API for upload and publish workflows.
+  x-docs-revision: 2026-02-24
 servers:
   - url: https://api.voxelshelf.com/api
 security:
