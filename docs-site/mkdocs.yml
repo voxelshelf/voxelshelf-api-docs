@@ -1,0 +1,29 @@
+site_name: Voxel Shelf API Docs
+site_description: Public documentation for the Voxel Shelf upload and publish API.
+site_url: https://voxelshelf.github.io/voxelshelf-api-docs
+repo_url: https://github.com/voxelshelf/voxelshelf-api-docs
+repo_name: voxelshelf/voxelshelf-api-docs
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - content.code.copy
+    - search.highlight
+  palette:
+    - scheme: default
+      primary: blue grey
+      accent: amber
+
+docs_dir: ../docs
+site_dir: ../site
+
+nav:
+  - Getting Started: getting-started.md
+  - Upload Flow: upload-flow.md
+  - Publish Flow: publish-flow.md
+  - Authentication: authentication.md
+  - Errors and Rate Limits: errors-and-rate-limits.md
+  - API Reference: api-reference.md
